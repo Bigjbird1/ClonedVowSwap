@@ -38,17 +38,17 @@ export default function HeroClient({ heroVideo }: HeroClientProps) {
               <div className="mx-auto max-w-2xl gap-x-14 lg:mx-0 lg:flex lg:max-w-none lg:items-center">
                 <div className="relative w-full max-w-xl lg:shrink-0 xl:max-w-2xl ">
                   <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-8xl text-white">
-                    Buy and Sell Sneakers
+                    Find Your Dream Wedding Items
                   </h1>
                   <p className="mt-6 text-lg leading-8 text-gray-600 sm:max-w-md lg:max-w-none text-white">
-                    Buy and sell sneakers easily at this new marketplace.
+                    Buy and sell pre-loved wedding dresses, decor, and accessories at affordable prices.
                   </p>
                   <div className="mt-10 flex flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-x-6">
                     <Link
                       href="/listings"
-                      className="rounded-md bg-green-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-green-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600"
+                      className="rounded-md bg-rose-600 px-5 py-3 text-base font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600"
                     >
-                      Explore all listings now
+                      Discover Wedding Treasures
                     </Link>
 
                     <div className="w-full sm:flex-1">
@@ -56,7 +56,7 @@ export default function HeroClient({ heroVideo }: HeroClientProps) {
                         href="/sign-up"
                         className="text-sm font-semibold leading-6 text-gray-900 text-white"
                       >
-                        Or start selling <span aria-hidden="true">→</span>
+                        List your wedding items <span aria-hidden="true">→</span>
                       </Link>
                     </div>
                   </div>

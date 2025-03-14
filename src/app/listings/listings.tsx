@@ -4,15 +4,21 @@ import { useState, useEffect } from "react";
 import { Disclosure } from "@headlessui/react";
 import MainLayout from "../SpeceficLayouts/MainLayout";
 import Pagination from "./paginationComponent";
-import Link from "next/link";
-import Image from "next/image";
+import ListingCard from "../../Components/MainComponents/Listings/ListingCard";
+import { WeddingCategory, ItemCondition } from "../../../models/supabaseListing";
 
 interface Listing {
   id: string;
   title: string;
   description: string;
   price: number;
-  photos: { url: string }[];
+  originalRetailPrice?: number;
+  photos: { url: string; alt?: string }[];
+  category?: WeddingCategory;
+  condition?: ItemCondition;
+  measurements?: Record<string, { value: number; unit: string }>;
+  style?: string[];
+  color?: string[];
 }
 
 interface ListingsProps {
@@ -24,29 +30,64 @@ const priceOptions = [
   { value: "51-100", label: "$51 - $100" },
   { value: "101-200", label: "$101 - $200" },
   { value: "201-500", label: "$201 - $500" },
-  { value: "501+", label: "$501+ " },
+  { value: "501-1000", label: "$501 - $1000" },
+  { value: "1001+", label: "$1000+" },
+];
+
+const categoryOptions = [
+  { value: "dress", label: "Wedding Dresses" },
+  { value: "decor", label: "Decorations" },
+  { value: "accessories", label: "Accessories" },
+  { value: "stationery", label: "Stationery" },
+  { value: "gifts", label: "Gifts" },
+];
+
+const conditionOptions = [
+  { value: "new_with_tags", label: "New with Tags" },
+  { value: "new_without_tags", label: "New without Tags" },
+  { value: "like_new", label: "Like New" },
+  { value: "gently_used", label: "Gently Used" },
+  { value: "visible_wear", label: "Visible Wear" },
 ];
 
 export default function Listings({ listings }: ListingsProps) {
   const [filteredProducts, setFilteredProducts] = useState<Listing[]>(listings);
   const [selectedPriceRange, setSelectedPriceRange] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
 
   useEffect(() => {
-    filterProductsByPrice();
-  }, [selectedPriceRange]);
+    applyFilters();
+  }, [selectedPriceRange, selectedCategories, selectedConditions]);
 
-  const filterProductsByPrice = () => {
-    if (selectedPriceRange.length === 0) {
-      setFilteredProducts(listings);
-    } else {
-      const filtered = listings.filter((product) => {
+  const applyFilters = () => {
+    let filtered = [...listings];
+    
+    // Apply price filter
+    if (selectedPriceRange.length > 0) {
+      filtered = filtered.filter((product) => {
         return selectedPriceRange.some((range) => {
           const [min, max] = range.split("-").map(Number);
           return product.price >= min && (max ? product.price <= max : true);
         });
       });
-      setFilteredProducts(filtered);
     }
+    
+    // Apply category filter
+    if (selectedCategories.length > 0) {
+      filtered = filtered.filter((product) => 
+        selectedCategories.includes(product.category || '')
+      );
+    }
+    
+    // Apply condition filter
+    if (selectedConditions.length > 0) {
+      filtered = filtered.filter((product) => 
+        selectedConditions.includes(product.condition || '')
+      );
+    }
+    
+    setFilteredProducts(filtered);
   };
 
   const handlePriceChange = (priceRange: string) => {
@@ -54,6 +95,22 @@ export default function Listings({ listings }: ListingsProps) {
       prevRanges.includes(priceRange)
         ? prevRanges.filter((range) => range !== priceRange)
         : [...prevRanges, priceRange]
+    );
+  };
+  
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategories((prevCategories) =>
+      prevCategories.includes(category)
+        ? prevCategories.filter((cat) => cat !== category)
+        : [...prevCategories, category]
+    );
+  };
+  
+  const handleConditionChange = (condition: string) => {
+    setSelectedConditions((prevConditions) =>
+      prevConditions.includes(condition)
+        ? prevConditions.filter((cond) => cond !== condition)
+        : [...prevConditions, condition]
     );
   };
 
@@ -67,6 +124,32 @@ export default function Listings({ listings }: ListingsProps) {
             <div className="space-y-10 divide-y divide-gray-200 p-4">
               <fieldset>
                 <legend className="block text-sm font-medium text-gray-900">
+                  Category
+                </legend>
+                <div className="space-y-3 pt-6">
+                  {categoryOptions.map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        id={`category-${option.value}`}
+                        name="category"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                        onChange={() => handleCategoryChange(option.value)}
+                        checked={selectedCategories.includes(option.value)}
+                      />
+                      <label
+                        htmlFor={`category-${option.value}`}
+                        className="ml-3 text-sm text-gray-500"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="pt-6">
+                <legend className="block text-sm font-medium text-gray-900">
                   Price
                 </legend>
                 <div className="space-y-3 pt-6">
@@ -76,12 +159,38 @@ export default function Listings({ listings }: ListingsProps) {
                         id={`price-${option.value}`}
                         name="price"
                         type="checkbox"
-                        className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
+                        className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
                         onChange={() => handlePriceChange(option.value)}
                         checked={selectedPriceRange.includes(option.value)}
                       />
                       <label
                         htmlFor={`price-${option.value}`}
+                        className="ml-3 text-sm text-gray-500"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </fieldset>
+
+              <fieldset className="pt-6">
+                <legend className="block text-sm font-medium text-gray-900">
+                  Condition
+                </legend>
+                <div className="space-y-3 pt-6">
+                  {conditionOptions.map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        id={`condition-${option.value}`}
+                        name="condition"
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                        onChange={() => handleConditionChange(option.value)}
+                        checked={selectedConditions.includes(option.value)}
+                      />
+                      <label
+                        htmlFor={`condition-${option.value}`}
                         className="ml-3 text-sm text-gray-500"
                       >
                         {option.label}
@@ -101,31 +210,85 @@ export default function Listings({ listings }: ListingsProps) {
                   {open ? "Hide" : "Show"} filters
                 </Disclosure.Button>
                 <Disclosure.Panel className="p-4">
-                  <fieldset>
-                    <legend className="block text-sm font-medium text-gray-900">
-                      Price
-                    </legend>
-                    <div className="space-y-3 pt-6">
-                      {priceOptions.map((option) => (
-                        <div key={option.value} className="flex items-center">
-                          <input
-                            id={`mobile-price-${option.value}`}
-                            name="price"
-                            type="checkbox"
-                            className="h-4 w-4 rounded border-gray-300 text-gray-600 focus:ring-gray-500"
-                            onChange={() => handlePriceChange(option.value)}
-                            checked={selectedPriceRange.includes(option.value)}
-                          />
-                          <label
-                            htmlFor={`mobile-price-${option.value}`}
-                            className="ml-3 text-sm text-gray-500"
-                          >
-                            {option.label}
-                          </label>
-                        </div>
-                      ))}
-                    </div>
-                  </fieldset>
+                  <div className="space-y-6">
+                    <fieldset>
+                      <legend className="block text-sm font-medium text-gray-900">
+                        Category
+                      </legend>
+                      <div className="space-y-3 pt-6">
+                        {categoryOptions.map((option) => (
+                          <div key={option.value} className="flex items-center">
+                            <input
+                              id={`mobile-category-${option.value}`}
+                              name="category"
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                              onChange={() => handleCategoryChange(option.value)}
+                              checked={selectedCategories.includes(option.value)}
+                            />
+                            <label
+                              htmlFor={`mobile-category-${option.value}`}
+                              className="ml-3 text-sm text-gray-500"
+                            >
+                              {option.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </fieldset>
+                    
+                    <fieldset>
+                      <legend className="block text-sm font-medium text-gray-900">
+                        Price
+                      </legend>
+                      <div className="space-y-3 pt-6">
+                        {priceOptions.map((option) => (
+                          <div key={option.value} className="flex items-center">
+                            <input
+                              id={`mobile-price-${option.value}`}
+                              name="price"
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                              onChange={() => handlePriceChange(option.value)}
+                              checked={selectedPriceRange.includes(option.value)}
+                            />
+                            <label
+                              htmlFor={`mobile-price-${option.value}`}
+                              className="ml-3 text-sm text-gray-500"
+                            >
+                              {option.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </fieldset>
+                    
+                    <fieldset>
+                      <legend className="block text-sm font-medium text-gray-900">
+                        Condition
+                      </legend>
+                      <div className="space-y-3 pt-6">
+                        {conditionOptions.map((option) => (
+                          <div key={option.value} className="flex items-center">
+                            <input
+                              id={`mobile-condition-${option.value}`}
+                              name="condition"
+                              type="checkbox"
+                              className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                              onChange={() => handleConditionChange(option.value)}
+                              checked={selectedConditions.includes(option.value)}
+                            />
+                            <label
+                              htmlFor={`mobile-condition-${option.value}`}
+                              className="ml-3 text-sm text-gray-500"
+                            >
+                              {option.label}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    </fieldset>
+                  </div>
                 </Disclosure.Panel>
               </>
             )}
@@ -135,35 +298,20 @@ export default function Listings({ listings }: ListingsProps) {
           <main className="lg:col-span-3 xl:col-span-4 px-4 md:px-6 lg:px-8">
             <div className="mt-6 grid grid-cols-1 gap-y-4 sm:grid-cols-2 sm:gap-x-6 sm:gap-y-10 lg:gap-x-8 xl:grid-cols-3 mb-8">
               {filteredProducts.map((product) => (
-                <div
+                <ListingCard
                   key={product.id}
-                  className="group relative overflow-hidden rounded-lg border border-gray-200 bg-white flex flex-col"
-                >
-                  <div className="relative w-full h-80 bg-gray-200 group-hover:opacity-75 sm:aspect-w-2 sm:aspect-h-3 ">
-                    <Image
-                      src={product.photos[0].url}
-                      alt={product.title}
-                      layout="fill"
-                      objectFit="cover"
-                    />
-                  </div>
-                  <div className="p-4">
-                    <h3 className="text-sm font-medium text-gray-900">
-                      {product.title}
-                    </h3>
-                    <p className="text-sm text-gray-500">
-                      {product.description}
-                    </p>
-                    <p className="text-lg font-medium text-gray-900">
-                      ${product.price}
-                    </p>
-                    <Link href={`/listings/${product.id}`} passHref>
-                      <span className="mt-4 block text-sm font-medium  text-green-600 hover:text-green-500">
-                        View details →
-                      </span>
-                    </Link>
-                  </div>
-                </div>
+                  id={product.id}
+                  title={product.title}
+                  description={product.description}
+                  price={product.price}
+                  originalRetailPrice={product.originalRetailPrice}
+                  photos={product.photos}
+                  category={product.category}
+                  condition={product.condition}
+                  measurements={product.measurements}
+                  style={product.style}
+                  color={product.color}
+                />
               ))}
             </div>
             <Pagination
