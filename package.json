@@ -16,7 +16,9 @@
     "test:coverage": "jest --coverage",
     "migrate": "node scripts/run-migration.js",
     "migrate:test": "node scripts/run-migration.js 02_create_test_helpers.sql",
-    "migrate:test:all": "npm run migrate && npm run migrate:test && npm test"
+    "migrate:test:all": "npm run migrate && npm run migrate:test && npm test",
+    "migrate:performance": "node scripts/run-performance-migration.js",
+    "optimize": "npm run migrate:performance"
   },
   "dependencies": {
     "@clerk/localizations": "^3.9.8",
@@ -27,6 +29,7 @@
     "@next/third-parties": "^15.1.7",
     "@react-google-maps/api": "^2.20.6",
     "@sendgrid/mail": "^8.1.4",
+    "@supabase/realtime-js": "^2.11.5",
     "@supabase/supabase-js": "^2.49.1",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.7",
@@ -48,6 +51,7 @@
     "react-dom": "^18.2.0",
     "react-loading-skeleton": "^3.4.0",
     "react-select": "^5.8.0",
+    "recharts": "^2.15.1",
     "server-only": "^0.0.1",
     "svix": "^1.30.0",
     "uuid": "^11.1.0"

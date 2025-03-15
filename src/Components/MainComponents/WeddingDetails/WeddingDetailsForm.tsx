@@ -1,13 +1,36 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { WeddingCategory, ItemCondition, Measurements } from "../../../../models/supabaseListing";
-import CategorySelect from "./CategorySelect";
-import ConditionSelect from "./ConditionSelect";
-import PriceInputs from "./PriceInputs";
-import MeasurementsForm from "./MeasurementsForm";
-import StyleAndColorInputs from "./StyleAndColorInputs";
 import { getMeasurementTemplateByCategory } from "../../../../models/supabaseListing";
+import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+
+// Dynamically import components
+const CategorySelect = dynamic(() => import("./CategorySelect"), {
+  loading: () => <LoadingSpinner />,
+  ssr: false
+});
+
+const ConditionSelect = dynamic(() => import("./ConditionSelect"), {
+  loading: () => <LoadingSpinner />,
+  ssr: false
+});
+
+const PriceInputs = dynamic(() => import("./PriceInputs"), {
+  loading: () => <LoadingSpinner />,
+  ssr: false
+});
+
+const MeasurementsForm = dynamic(() => import("./MeasurementsForm"), {
+  loading: () => <LoadingSpinner />,
+  ssr: false
+});
+
+const StyleAndColorInputs = dynamic(() => import("./StyleAndColorInputs"), {
+  loading: () => <LoadingSpinner />,
+  ssr: false
+});
 
 interface WeddingDetailsFormProps {
   initialValues?: {

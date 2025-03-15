@@ -7,6 +7,7 @@ import PriceRangeFilter from './Filters/PriceRangeFilter';
 import StyleFilter from './Filters/StyleFilter';
 import ColorFilter from './Filters/ColorFilter';
 import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from '@heroicons/react/20/solid';
+import { trackFilterRemove } from '../../../services/analyticsService';
 
 interface FilterPanelProps {
   filters: FilterState;
@@ -38,6 +39,32 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       ...prev,
       [section]: !prev[section],
     }));
+  };
+
+  // Handle removing a specific filter with analytics tracking
+  const handleRemoveFilter = (filterType: string) => {
+    switch (filterType) {
+      case 'categories':
+        trackFilterRemove('categories', JSON.stringify(filters.categories));
+        onFilterChange({ categories: [] });
+        break;
+      case 'conditions':
+        trackFilterRemove('conditions', JSON.stringify(filters.conditions));
+        onFilterChange({ conditions: [] });
+        break;
+      case 'price':
+        trackFilterRemove('priceRange', JSON.stringify(filters.priceRange));
+        onFilterChange({ priceRange: { min: null, max: null } });
+        break;
+      case 'styles':
+        trackFilterRemove('styles', filters.styles);
+        onFilterChange({ styles: [] });
+        break;
+      case 'colors':
+        trackFilterRemove('colors', filters.colors);
+        onFilterChange({ colors: [] });
+        break;
+    }
   };
 
   // Count active filters
@@ -92,28 +119,63 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       {getActiveFilterCount() > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {filters.categories.length > 0 && (
-            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              Categories: {filters.categories.length}
+            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <span>Categories: {filters.categories.length}</span>
+              <button 
+                onClick={() => handleRemoveFilter('categories')}
+                className="ml-1 text-indigo-600 hover:text-indigo-800"
+                aria-label="Remove category filter"
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
             </div>
           )}
           {filters.conditions.length > 0 && (
-            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              Conditions: {filters.conditions.length}
+            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <span>Conditions: {filters.conditions.length}</span>
+              <button 
+                onClick={() => handleRemoveFilter('conditions')}
+                className="ml-1 text-indigo-600 hover:text-indigo-800"
+                aria-label="Remove condition filter"
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
             </div>
           )}
           {(filters.priceRange.min !== null || filters.priceRange.max !== null) && (
-            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              Price
+            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <span>Price</span>
+              <button 
+                onClick={() => handleRemoveFilter('price')}
+                className="ml-1 text-indigo-600 hover:text-indigo-800"
+                aria-label="Remove price filter"
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
             </div>
           )}
           {filters.styles.length > 0 && (
-            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              Styles: {filters.styles.length}
+            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <span>Styles: {filters.styles.length}</span>
+              <button 
+                onClick={() => handleRemoveFilter('styles')}
+                className="ml-1 text-indigo-600 hover:text-indigo-800"
+                aria-label="Remove style filter"
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
             </div>
           )}
           {filters.colors.length > 0 && (
-            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              Colors: {filters.colors.length}
+            <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full flex items-center">
+              <span>Colors: {filters.colors.length}</span>
+              <button 
+                onClick={() => handleRemoveFilter('colors')}
+                className="ml-1 text-indigo-600 hover:text-indigo-800"
+                aria-label="Remove color filter"
+              >
+                <XMarkIcon className="h-3 w-3" />
+              </button>
             </div>
           )}
         </div>

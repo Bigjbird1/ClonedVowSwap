@@ -8,6 +8,7 @@ import { Menu, Transition, Popover } from "@headlessui/react";
 import { Fragment } from "react";
 import SearchComponent from "../SearchComponent/SearchComponent";
 import { fetchSearchResults } from "../../../app/listings/utils-listings";
+import NotificationBell from "../Notifications/NotificationBell";
 
 interface HeaderProps {}
 
@@ -88,7 +89,12 @@ export default function Header({}: HeaderProps) {
                     )}
                   </Popover.Button>
                 </div>
-                <div className="hidden lg:flex lg:items-center lg:justify-end xl:col-span-4">
+                <div className="hidden lg:flex lg:items-center lg:justify-end xl:col-span-4 space-x-4">
+                  {/* Notification Bell - only show for signed in users */}
+                  {isSignedIn && (
+                    <NotificationBell className="mr-2" />
+                  )}
+                  
                   {isSignedIn ? (
                     <Link
                       href="/dashboard"

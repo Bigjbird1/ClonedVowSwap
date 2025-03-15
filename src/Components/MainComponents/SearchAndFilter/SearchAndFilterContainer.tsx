@@ -3,6 +3,13 @@ import { SupabaseListing, WeddingCategory, ItemCondition } from '../../../../mod
 import SearchBar from './SearchBar';
 import FilterPanel from './FilterPanel';
 import { getAllListingsWithSellers } from '../../../exampleData/weddingListings';
+import useDebounce from '../../../hooks/useDebounce';
+import { 
+  trackSearch, 
+  trackFilterApply, 
+  trackFilterRemove, 
+  trackFilterClear 
+} from '../../../services/analyticsService';
 
 // Define the filter state interface
 export interface FilterState {
@@ -70,6 +77,16 @@ const SearchAndFilterContainer: React.FC<SearchAndFilterContainerProps> = ({
     }
   }, [filters, allListings, onFilteredResults]);
 
+  // Debounce search query to avoid excessive analytics events
+  const debouncedSearchQuery = useDebounce(filters.searchQuery, 800);
+
+  // Track search when debounced query changes
+  useEffect(() => {
+    if (debouncedSearchQuery) {
+      trackSearch(debouncedSearchQuery);
+    }
+  }, [debouncedSearchQuery]);
+
   // Handle search query changes
   const handleSearchChange = (query: string) => {
     setFilters(prev => ({
@@ -78,16 +95,42 @@ const SearchAndFilterContainer: React.FC<SearchAndFilterContainerProps> = ({
     }));
   };
 
-  // Handle filter changes
+  // Handle filter changes with analytics tracking
   const handleFilterChange = (filterUpdate: Partial<FilterState>) => {
+    // Track filter applications
+    if (filterUpdate.categories && filterUpdate.categories !== filters.categories) {
+      trackFilterApply('categories', JSON.stringify(filterUpdate.categories));
+    }
+    
+    if (filterUpdate.conditions && filterUpdate.conditions !== filters.conditions) {
+      trackFilterApply('conditions', JSON.stringify(filterUpdate.conditions));
+    }
+    
+    if (filterUpdate.priceRange && filterUpdate.priceRange !== filters.priceRange) {
+      trackFilterApply('priceRange', JSON.stringify(filterUpdate.priceRange));
+    }
+    
+    if (filterUpdate.styles && filterUpdate.styles !== filters.styles) {
+      trackFilterApply('styles', filterUpdate.styles);
+    }
+    
+    if (filterUpdate.colors && filterUpdate.colors !== filters.colors) {
+      trackFilterApply('colors', filterUpdate.colors);
+    }
+
+    // Update filters state
     setFilters(prev => ({
       ...prev,
       ...filterUpdate,
     }));
   };
 
-  // Clear all filters
+  // Clear all filters with analytics tracking
   const handleClearFilters = () => {
+    // Track clear filters event
+    trackFilterClear();
+    
+    // Reset filters state
     setFilters({
       searchQuery: '',
       categories: [],
